@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Client List</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+</head>
+<body>
+<!-- Include _menu.html -->
+<th:block th:include="/_menu"></th:block>
+
+
+<h2>Client List Page</h2>
+<!--<h3>Welcome : <span th:utext="${#request.userPrincipal.name}"></span></h3>-->
+<!--<br/><br/>-->
+
+<div th:if="${userInfo != null}" th:utext="${userInfo}"></div>
+
+
+<!-- Include _list.html -->
+<th:block th:include="/_list"></th:block>
+
+
+
+</body>
+
+</html>
