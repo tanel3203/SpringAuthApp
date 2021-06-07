@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import com.example.demo.entities.AppUser;
 import com.example.demo.repositories.AppRoleRepository;
 import com.example.demo.repositories.AppUserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
