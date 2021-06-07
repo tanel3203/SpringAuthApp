@@ -66,4 +66,13 @@ public class AppUser {
         return appUser;
     }
 
+    @Override
+    public String toString() {
+        return "AppUser{" +
+               "userId=" + userId +
+               ", userName='" + userName + '\'' +
+               ", encrytedPassword='" + encrytedPassword + '\'' +
+               ", enabled=" + enabled +
+               '}';
+    }
 }

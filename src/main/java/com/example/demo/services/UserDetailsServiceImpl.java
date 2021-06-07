@@ -3,6 +3,7 @@ package com.example.demo.services;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 import com.example.demo.entities.AppUser;
 import com.example.demo.repositories.AppRoleRepository;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
+    Logger log = Logger.getLogger(this.getClass().getSimpleName());
 
     private final AppUserRepository appUserRepository;
 
@@ -28,6 +30,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.appRoleRepository = appRoleRepository;
     }
 
+    // provision method for usages, handles the side effects
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
         return loadUserByUsernameFn("User not found! " + userName,
@@ -35,18 +38,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                                     this.appRoleRepository::getRoleNames);
     }
 
-    protected UserDetails loadUserByUsernameFn(String onErrDesc, AppUser appUser, Function<Long, List<String>> getRoleNamesFn) {
+    // method under test - method that contains complete pure logic provided by this service
+    protected UserDetails loadUserByUsernameFn(String onErrDesc,
+                                               AppUser appUser,
+                                               Function<Long, List<String>> getRoleNamesFn) {
 
         if (appUser == null) {
-            System.out.println(onErrDesc);
+            log.warning(onErrDesc);
             throw new UsernameNotFoundException(onErrDesc);
         }
 
-        System.out.println("Found User: " + appUser);
+        log.info("Found User: " + appUser);
+        return userDetailsOf(appUser,
+                             grantListOf(getRoleNamesFn.apply(appUser.getUserId())));
+    }
 
-        // [ROLE_USER, ROLE_ADMIN,..]
-        List<String> roleNames = getRoleNamesFn.apply(appUser.getUserId());
-
+    private List<GrantedAuthority> grantListOf(List<String> roleNames) {
         List<GrantedAuthority> grantList = new ArrayList<GrantedAuthority>();
         if (roleNames != null) {
             for (String role : roleNames) {
@@ -56,10 +63,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             }
         }
 
-        UserDetails userDetails = (UserDetails) new User(appUser.getUserName(), //
-                                                         appUser.getEncrytedPassword(), grantList);
+        return grantList;
+    }
 
-        return userDetails;
+    private UserDetails userDetailsOf(AppUser appUser, List<GrantedAuthority> grantList) {
+        return (UserDetails) new User(appUser.getUserName(), //
+                                      appUser.getEncrytedPassword(), grantList);
     }
 
 }
