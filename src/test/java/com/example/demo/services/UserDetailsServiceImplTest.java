@@ -1,18 +1,15 @@
 package com.example.demo.services;
 
-import com.example.demo.entities.AppUser;
 import com.example.demo.repositories.AppRoleRepository;
 import com.example.demo.repositories.AppUserRepository;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.InjectMocks;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.List;
-import java.util.function.Function;
 
+import static com.example.demo.TestConstants.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -24,7 +21,9 @@ public class UserDetailsServiceImplTest {
 
     AppRoleRepository appRoleRepository = mock(AppRoleRepository.class);
 
-    UserDetailsServiceImpl userDetailsService = new UserDetailsServiceImpl(appUserRepository, appRoleRepository);
+    UserDetailsServiceImpl userDetailsService =
+            new UserDetailsServiceImpl(appUserRepository, appRoleRepository);
+
     @BeforeEach
     public void setup() {
 
@@ -33,37 +32,32 @@ public class UserDetailsServiceImplTest {
 
     @Test
     public void verifyUserDetailsThrows_whenNotProperlySetUp() {
-        String onErrDesc = "Not found";
-        AppUser appUser = null;
-        Function<Long, List<String>> getRoleNamesFn = (u) -> List.of();
 
         Exception exception = assertThrows(UsernameNotFoundException.class, () -> {
-            userDetailsService.loadUserByUsernameFn(onErrDesc, appUser, getRoleNamesFn);
+            userDetailsService.loadUserByUsernameFn(ON_ERR_DESCRIPTION,
+                                                    APP_USER_NULL,
+                                                    (u) -> List.of());
         });
 
-        assertTrue(exception.getMessage().contains(onErrDesc));
+        assertTrue(exception.getMessage().contains(ON_ERR_DESCRIPTION));
     }
 
     @Test
     public void verifyUserDetailsReturned_whenProperlySetUp() {
-        String onErrDesc = "Not found";
-        AppUser appUser = AppUser.testUser();
-        Function<Long, List<String>> getRoleNamesFn = (u) -> List.of("ROLE_TEST");
-
-        UserDetails userDetails = userDetailsService.loadUserByUsernameFn(onErrDesc, appUser, getRoleNamesFn);
+        UserDetails userDetails = userDetailsService.loadUserByUsernameFn(ON_ERR_DESCRIPTION,
+                                                                          APP_USER,
+                                                                          (u) -> List.of(ROLE_TEST));
 
         assertTrue(userDetails.getAuthorities()
                               .stream()
-                              .anyMatch(p -> p.getAuthority().equalsIgnoreCase("ROLE_TEST")));
+                              .anyMatch(p -> p.getAuthority().equalsIgnoreCase(ROLE_TEST)));
     }
 
     @Test
     public void verifyUserDetailsReturnedWithNoAuthorities_whenProperlySetUpButNoAuthorities() {
-        String onErrDesc = "Not found";
-        AppUser appUser = AppUser.testUser();
-        Function<Long, List<String>> getRoleNamesFn = (u) -> List.of();
-
-        UserDetails userDetails = userDetailsService.loadUserByUsernameFn(onErrDesc, appUser, getRoleNamesFn);
+        UserDetails userDetails = userDetailsService.loadUserByUsernameFn(ON_ERR_DESCRIPTION,
+                                                                          APP_USER,
+                                                                          (u) -> List.of());
 
         assertTrue(userDetails.getAuthorities().isEmpty());
     }
