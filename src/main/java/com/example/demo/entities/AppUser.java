@@ -59,4 +59,11 @@ public class AppUser {
         this.enabled = enabled;
     }
 
+    public static AppUser testUser() {
+        AppUser appUser = new AppUser();
+        appUser.setUserName("TERE");
+        appUser.setEncrytedPassword("343rkm34m");
+        return appUser;
+    }
+
 }

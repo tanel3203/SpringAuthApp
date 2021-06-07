@@ -2,6 +2,7 @@ package com.example.demo.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import com.example.demo.entities.AppUser;
 import com.example.demo.repositories.AppRoleRepository;
@@ -18,25 +19,33 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    @Autowired
-    private AppUserRepository appUserRepository;
+    private final AppUserRepository appUserRepository;
 
-    @Autowired
-    private AppRoleRepository appRoleRepository;
+    private final AppRoleRepository appRoleRepository;
+
+    public UserDetailsServiceImpl(AppUserRepository appUserRepository, AppRoleRepository appRoleRepository) {
+        this.appUserRepository = appUserRepository;
+        this.appRoleRepository = appRoleRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
-        AppUser appUser = this.appUserRepository.findByUserName(userName);
+        return loadUserByUsernameFn("User not found! " + userName,
+                                    this.appUserRepository.findByUserName(userName),
+                                    (u) -> this.appRoleRepository.getRoleNames(u));
+    }
+
+    public UserDetails loadUserByUsernameFn(String onErrDesc, AppUser appUser, Function<Long, List<String>> getRoleNamesFn) {
 
         if (appUser == null) {
-            System.out.println("User not found! " + userName);
-            throw new UsernameNotFoundException("User " + userName + " was not found in the database");
+            System.out.println(onErrDesc);
+            throw new UsernameNotFoundException(onErrDesc);
         }
 
         System.out.println("Found User: " + appUser);
 
         // [ROLE_USER, ROLE_ADMIN,..]
-        List<String> roleNames = this.appRoleRepository.getRoleNames(appUser.getUserId());
+        List<String> roleNames = getRoleNamesFn.apply(appUser.getUserId());
 
         List<GrantedAuthority> grantList = new ArrayList<GrantedAuthority>();
         if (roleNames != null) {
@@ -48,7 +57,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
 
         UserDetails userDetails = (UserDetails) new User(appUser.getUserName(), //
-                appUser.getEncrytedPassword(), grantList);
+                                                         appUser.getEncrytedPassword(), grantList);
 
         return userDetails;
     }
