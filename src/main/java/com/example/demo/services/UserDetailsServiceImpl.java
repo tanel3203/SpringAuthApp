@@ -32,10 +32,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
         return loadUserByUsernameFn("User not found! " + userName,
                                     this.appUserRepository.findByUserName(userName),
-                                    (u) -> this.appRoleRepository.getRoleNames(u));
+                                    this.appRoleRepository::getRoleNames);
     }
 
-    public UserDetails loadUserByUsernameFn(String onErrDesc, AppUser appUser, Function<Long, List<String>> getRoleNamesFn) {
+    protected UserDetails loadUserByUsernameFn(String onErrDesc, AppUser appUser, Function<Long, List<String>> getRoleNamesFn) {
 
         if (appUser == null) {
             System.out.println(onErrDesc);
